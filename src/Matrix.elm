@@ -16,6 +16,7 @@ module Matrix
         , repeat
         , set
         , toIndexedArray
+        , toList
         , update
         , width
         )
@@ -56,7 +57,12 @@ Internally it uses a flat array for speed reasons.
 
 # Applying functions
 
-@docs filter, map, map2, indexedMap, toIndexedArray
+@docs filter, map, map2, indexedMap
+
+
+# Converting from a matrix
+
+@docs toIndexedArray, toList
 
 -}
 
@@ -326,3 +332,31 @@ filter f matrix =
 toIndexedArray : Matrix a -> Array ( ( Int, Int ), a )
 toIndexedArray matrix =
     (indexedMap (\x y v -> ( ( x, y ), v )) matrix).data
+
+
+{-| Convert a matrix to a list of lists
+-}
+toList : Matrix a -> List (List a)
+toList matrix =
+    naiveChunks (Tuple.first matrix.size) matrix.data
+
+
+{-| Create fixed size chunks of elements from an array. Assumes that the number
+of elements is divisible by the size of the chunks, otherwise weird things can
+happen. This is okay though since it is only used for toList where the array is
+a matrix and the chunk size is the matrix's width and an invariant of the
+`Matrix` type is that the number of elements must be divisible by the width.
+-}
+naiveChunks : Int -> Array a -> List (List a)
+naiveChunks size array =
+    let
+        step x ( n, chunk, chunks ) =
+            if n + 1 < size then
+                ( n + 1, x :: chunk, chunks )
+            else
+                ( 0, [], (x :: chunk) :: chunks )
+
+        ( _, _, chunks ) =
+            Array.foldr step ( 0, [], [] ) array
+    in
+    chunks
