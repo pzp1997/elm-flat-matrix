@@ -385,6 +385,39 @@ toIndexedArray =
         ]
 
 
+toListTest : List (List a) -> () -> Expect.Expectation
+toListTest listOfLists () =
+    case Matrix.fromList listOfLists of
+        Just matrix ->
+            equal listOfLists <|
+                Matrix.toList matrix
+
+        Nothing ->
+            Expect.fail "list is not rectangular"
+
+
+toList : Test
+toList =
+    describe "toList"
+        [ test "empty matrix" <|
+            \() ->
+                equal [] <|
+                    Matrix.toList Matrix.empty
+        , test "single entry" <|
+            \() ->
+                equal [ [ 7 ] ] <|
+                    Matrix.toList (Matrix.repeat 1 1 7)
+        , test "single row matrix" <|
+            toListTest [ [ 1, 2, 3 ] ]
+        , test "single column matrix" <|
+            toListTest [ [ 1 ], [ 2 ], [ 3 ] ]
+        , test "square matrix (non-trivial)" <|
+            toListTest [ [ 1, 2, 3 ], [ 4, 5, 6 ], [ 7, 8, 9 ] ]
+        , test "rectangular matrix (non-trivial)" <|
+            toListTest [ [ 1, 2, 3 ], [ 4, 5, 6 ] ]
+        ]
+
+
 filter : Test
 filter =
     describe "Filter"
@@ -529,6 +562,7 @@ all =
         , filter
         , indexedMap
         , toIndexedArray
+        , toList
         , add
         , subtract
         , hadamard
